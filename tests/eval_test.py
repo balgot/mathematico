@@ -1,4 +1,4 @@
-from eval import Evaluator
+from src.eval import Evaluator
 
 
 def test_raises():

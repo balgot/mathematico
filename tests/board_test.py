@@ -1,4 +1,4 @@
-from board import Board
+from src.board import Board
 
 
 def test_make_move():
