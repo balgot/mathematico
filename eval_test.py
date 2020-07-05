@@ -44,3 +44,17 @@ def test_evaluate():
         Evaluator.TWO_OF_A_KIND + Evaluator.DIAGONAL_BONUS,
         0
     ])
+
+
+def test_evaluate_does_not_change_board():
+    from copy import deepcopy
+    board = [
+        [8, 7, 2, 5, 12],
+        [6, 5, 3, 4, 1],
+        [2, 4, 6, 1, 3],
+        [5, 2, 1, 3, 4],
+        [1, 3, 5, 6, 2]
+    ]
+    board_copy = deepcopy(board)
+    _ = Evaluator.evaluate(board)
+    assert board_copy == board
