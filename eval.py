@@ -6,26 +6,23 @@ resulting scores to the board
 from board import Board
 
 from copy import deepcopy
-from typing import Union
+from typing import Union, List, Any, Dict
 
 
-def rle(data: list):
+def rle(data: List[Any]) -> Dict[Any, int]:
     """
-    Performs run length encoding
+    Performs run length encoding on the data.
+
     :param data: sorted list
-    :return: list with rle pair (number, count)
+    :return: dictionary with keys being the elements
+        of the data and values being the occurrences
     """
-    result = []
-    current = data[0]
-    count = 0
-    for num in data:
-        if num == current:
-            count += 1
+    result = {}
+    for elem in data:
+        if elem in result:
+            result[elem] += 1
         else:
-            result.append((current, count))
-            count = 1
-            current = num
-    result.append((current, count))
+            result[elem] = 1
     return result
 
 
@@ -47,27 +44,39 @@ class Evaluator:
     FLUSH_1_10_11_12_13 = 150
 
     @staticmethod
-    def evaluate_line(line: list):
-        line.sort()
-        code = rle(line)
+    def evaluate_line(line: List[int]):
+        """
+        Evaluates a single line of the board. The rules are
+        applied according to the number of different values
+        in the line. Throw an exception if unexpected values
+        or their occurrences are present.
 
+        :param line: single line of the board
+        :return: score of the line
+        """
+        code = rle(line)
         if len(code) == 5:
-            # flush only or nothing
-            if line == [1, 10, 11, 12, 13]:
+            # Of each value is different, the only combination
+            # can be flush, either straight or <1, 10, 11, 12, 13>
+            if all(x in code for x in [1, 10, 11, 12, 13]):
                 return Evaluator.FLUSH_1_10_11_12_13
-            elif line[-1] - line[0] == 5 - 1:
+            if max(line) - min(line) == 5 - 1:
                 return Evaluator.STRAIGHT_FLUSH
-            else:
-                return 0
+            return 0
+
         elif len(code) == 4:
-            # only double
+            # The only combination with four different values is
+            # a single pair, and so we do not need to check any other
             return Evaluator.TWO_OF_A_KIND
+
         elif len(code) == 3:
-            # possible: TWO_OF_A_KIND_TWICE, THREE_OF_A_KIND
-            if any(code[i][1] == 3 for i in range(3)):
+            # To have three different values, either two and two
+            # values are same, or three are same
+            if any(x == 3 for x in code.values()):
                 return Evaluator.THREE_OF_A_KIND
             else:
                 return Evaluator.TWO_OF_A_KIND_TWICE
+
         elif len(code) == 2:
             # possible: FULL_HOUSE, FOUR_OF_A_KIND
             if code[0] == (1, 4):  # FOUR_ONES
@@ -78,8 +87,12 @@ class Evaluator:
                 return Evaluator.FOUR_OF_A_KIND
             else:  # FULL_HOUSE left
                 return Evaluator.FULL_HOUSE
+
         else:
-            raise ValueError("Unknown input")
+            # Note that we can't have more different values than five
+            # (length of the line) and less than two (max four numbers
+            # of a kind), thus if we get here, there is a mistake
+            raise ValueError(f"Unknown combination of values: {line}")
 
     @staticmethod
     def _evaluate_diagonals(board: list) -> int:
