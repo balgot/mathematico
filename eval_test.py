@@ -19,7 +19,7 @@ def test_evaluate_simple():
         [5, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert Evaluator.evaluate(board) == Evaluator.STRAIGHT_FLUSH
+    assert Evaluator.evaluate(board) == Evaluator.FLUSH
 
 
 def test_evaluate():
@@ -32,16 +32,16 @@ def test_evaluate():
     ]
     assert Evaluator.evaluate(board) == sum([
         Evaluator.FLUSH_1_10_11_12_13,
-        Evaluator.TWO_OF_A_KIND_TWICE,
-        Evaluator.STRAIGHT_FLUSH,
+        Evaluator.TWO_PAIRS,
+        Evaluator.FLUSH,
         Evaluator.FULL_HOUSE,
         0,
         Evaluator.FOUR_ONES,
         Evaluator.THREE_OF_A_KIND,
-        Evaluator.TWO_OF_A_KIND,
-        Evaluator.TWO_OF_A_KIND_TWICE,
+        Evaluator.PAIR,
+        Evaluator.TWO_PAIRS,
         0,
-        Evaluator.TWO_OF_A_KIND + Evaluator.DIAGONAL_BONUS,
+        Evaluator.PAIR + Evaluator.DIAGONAL_BONUS,
         0
     ])
 
@@ -69,7 +69,7 @@ def test_evaluate_all_combinations():
         [11, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert Evaluator.evaluate(board) == Evaluator.TWO_OF_A_KIND
+    assert Evaluator.evaluate(board) == Evaluator.PAIR
 
     # Two pairs
     board = [
@@ -79,7 +79,7 @@ def test_evaluate_all_combinations():
         [11, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert Evaluator.evaluate(board) == Evaluator.TWO_OF_A_KIND_TWICE
+    assert Evaluator.evaluate(board) == Evaluator.TWO_PAIRS
 
     # Three of a kind
     board = [
@@ -129,7 +129,7 @@ def test_evaluate_all_combinations():
         [5, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert Evaluator.evaluate(board) == Evaluator.STRAIGHT_FLUSH
+    assert Evaluator.evaluate(board) == Evaluator.FLUSH
 
     # 1 1 1 13 13
     board = [
@@ -139,7 +139,7 @@ def test_evaluate_all_combinations():
         [5, 2, 1, 3, 13],
         [9, 3, 5, 6, 1]
     ]
-    assert Evaluator.evaluate(board) == Evaluator.FULL_HOUSE_1_1_1_13_13
+    assert Evaluator.evaluate(board) == Evaluator.FULL_HOUSE_1_13
 
     # 1 10 11 12 13
     board = [
