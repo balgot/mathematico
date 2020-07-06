@@ -1,6 +1,6 @@
 """
-In this file, we define the interface for a player,
-as well as simple implementations of the player
+In this file, we define the interface for a player, as well as simple
+implementations of the player.
 """
 from .board import Board
 from .eval import Evaluator
@@ -105,13 +105,14 @@ class SimpleSimulationPlayer(HistoryPlayer):
 
     Note: the algorithm is forced to make move by time
     """
-    MOVE_TIME = 10_000_000_000  # number of nano-seconds 10-9
+    MOVE_TIME = 1_000_000_000  # number of nano-seconds 10-9
 
     class Node:
         def __init__(self, board: Board, position: Tuple[int, int],
                      available_cards: List[int]):
             """
-            Initialize the node
+            Initialize the node.
+            
             :param board: board to be referenced and changed with the move
                 already played
             :param position: position of the move, used for finding the best
@@ -200,64 +201,8 @@ class SimpleSimulationPlayer(HistoryPlayer):
         if len(nodes) != 1:
             self._run_simulations(nodes)
         best_node = max(nodes, key=lambda n: n.total_score)
-        if self.move:
+        if self.verbose:
             print(f"Simulations:\t{best_node.simulations:4d}\t"
                   f"Score: {best_node.total_score / best_node.simulations:.2f}",
                   flush=True)
         self.board.make_move(best_node.position, number)
-
-
-if __name__ == "__main__":
-
-    from .game import Game
-    game = Game()
-    game.add_player(SimpleSimulationPlayer(split=False))
-    game.add_player(SimpleSimulationPlayer(split=True))
-    print(game.start())
-    print("SPLIT=False", game.players[0].board, sep='\n')
-    print("SPLIT=True", game.players[1].board, sep='\n')
-    exit()
-
-    print("Simple Comparison of Available Non-Human Players")
-    total_random, total_simulation = 0, 0
-    ROUNDS = 10_000
-    print('|', '-' * 18, '|', sep='')
-
-    for i in range(ROUNDS):
-        if i % (ROUNDS // 20) == 0:
-            print('=', end='', flush=True)
-        random_player = RandomPlayer()
-        simulation_player = SimpleSimulationPlayer()
-
-        game = Game()
-        game.add_player(random_player)
-        game.add_player(simulation_player)
-        result = game.start()
-        total_random += result[0]
-        total_simulation += result[1]
-
-    print("Random Player Average Score:", total_random / ROUNDS, sep='\t')
-    print("Simulation Player Average Score:", total_simulation / ROUNDS, sep='\t')
-
-
-    ###################################################
-    #               INTERACTIVE GAME                  #
-    ###################################################
-    g = Game()
-    g.add_player(HumanPlayer())
-    print(g.start(verbose=True))
-
-    # noinspection PyShadowingNames,PyShadowingNames
-    def stats(rounds: int = 1000):
-        total = 0
-        for i in range(rounds):
-            if i % (rounds / 20) == 0:
-                print('=', end='', flush=True)
-            player = RandomPlayer()
-            game = Game()
-            _ = game.add_player(player)
-            total += game.start()[0]
-        return total / rounds
-
-
-    stats(100_000)
