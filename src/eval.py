@@ -2,7 +2,7 @@
 In this file we provide the definition of the evaluator class which can be used
 to assign the resulting scores to the board.
 """
-from board import Board
+from .board import Board
 from typing import Union, List, Any, Dict
 
 
@@ -101,7 +101,7 @@ class Evaluator:
         """
         score = 0
         main_diagonal = [board[i][i] for i in range(Board.SIZE)]
-        anti_diagonal = [board[i][Board.SIZE - i - 1] for i in range(Board.SIZE)]
+        anti_diagonal = [board[i][-i - 1] for i in range(Board.SIZE)]
 
         main_diagonal_score = Evaluator.evaluate_line(main_diagonal)
         anti_diagonal_score = Evaluator.evaluate_line(anti_diagonal)
