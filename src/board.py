@@ -17,6 +17,7 @@ class Board:
         self._board: List[List[Union[int, None]]] = [
             [None for _ in range(self.SIZE)] for _ in range(self.SIZE)
         ]
+        self.occupied_cells = 0
 
     def __str__(self):
         """
@@ -58,6 +59,7 @@ class Board:
         if self._board[row][col] is not None:
             raise ValueError(f"The position {(row, col)} is invalid")
         self._board[row][col] = move
+        self.occupied_cells += 1
         return self
 
     def possible_moves(self) -> List[Tuple[int, int]]:
