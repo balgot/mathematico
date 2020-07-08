@@ -3,56 +3,65 @@ In this file, we define the interface for a player, as well as simple
 implementations of the player.
 """
 from .board import Board
-from .eval import Evaluator
+from .eval import evaluate
 from time import time_ns
 import random as rnd
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from copy import deepcopy
+from abc import abstractmethod, ABC
 
 
-class Player:
+class Player(ABC):
     """
     The interface for a generic player class, which should provide methods for
-    interaction with the <game> class.
+    interaction with the <game> class. Required methods are move() and
+    get_board().
     """
-    def __init__(self):
-        self.board = Board()
-
-    def move(self, number: int) -> None:
+    @abstractmethod
+    def move(self, card_number: int) -> None:
         """
         Given the next number, places the number on the board.
 
-        :param number: the next card to be played
+        :param card_number: the next card to be played
         :return: None
         """
         pass
 
-    def get_board(self) -> Board:
-        return self.board
+    @abstractmethod
+    def get_board(self) -> Union[List[List[int]], Board]:
+        """
+        :return: current board as 2D array or Board instance
+        """
+        pass
 
 
 class RandomPlayer(Player):
     """
     Random player plays moves randomly on empty positions.
     """
-    def move(self, number: int):
-        possible_moves = self.board.possible_moves()
+    def __init__(self):
+        self.board = Board()
+
+    def move(self, number: int) -> None:
+        possible_moves = list(self.board.possible_moves())
         if not possible_moves:
             raise IndexError("No moves available")
         picked_move = rnd.choice(possible_moves)
         self.board.make_move(picked_move, number)
 
+    def get_board(self) -> Board:
+        return self.board
 
-class HumanPlayer(Player):
+
+class HumanPlayer(RandomPlayer):
     """
     Human player takes inputs from console after printing the board and the
     next move number.
     """
     def move(self, number: int):
-        print(self.board)
-        print(f"Next card:\t{number}")
+        print(self.board, f"Next card:\t{number}", sep='\n')
         row, col = None, None
-        moves = self.board.possible_moves()
+        moves = list(self.board.possible_moves())
 
         while (row, col) not in moves:
             row = int(input(f"Row number [0, {Board.SIZE}):\t"))
@@ -66,7 +75,7 @@ class HistoryPlayer(Player):
     provides access to the cards already drawn and cards that might be drawn.
     """
     def __init__(self):
-        super().__init__()
+        self.board = Board()
         self.history: List[int] = []
         self.available_cards: Dict[int, int] = {}
         for card in range(1, 14):
@@ -94,6 +103,9 @@ class HistoryPlayer(Player):
         """
         self.history.append(number)
         self.available_cards[number] -= 1
+
+    def get_board(self):
+        return self.board
 
 
 class SimpleSimulationPlayer(HistoryPlayer):
@@ -138,7 +150,7 @@ class SimpleSimulationPlayer(HistoryPlayer):
                 card = cards.pop()
                 position = rnd.choice(board.possible_moves())
                 board.make_move(position, card)
-            self.total_score += Evaluator.evaluate(board)
+            self.total_score += evaluate(board)
             self.simulations += 1
 
     def __init__(self, split: bool = False, verbose: bool = False):

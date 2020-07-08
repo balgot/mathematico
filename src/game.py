@@ -5,7 +5,7 @@ current number, and evaluating the positions.
 """
 import random as rnd
 from .player import Player
-from .eval import Evaluator as Eval
+from .eval import evaluate
 from .board import Board
 from typing import Union
 
@@ -94,4 +94,4 @@ class Game:
                 print(self)
             for player in self.players:
                 player.move(next_card)
-        return [Eval.evaluate(player.get_board()) for player in self.players]
+        return [evaluate(player.get_board()) for player in self.players]

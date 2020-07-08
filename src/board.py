@@ -68,6 +68,18 @@ class Board:
         """
         return self.board.T[n]
 
+    def diagonal(self, main_diagonal: bool = True) -> np.ndarray:
+        """
+        Returns main diagonal or main anti diagonal of the board.
+
+        :param main_diagonal: if True returns main diagonal, else anti diagonal
+        :return: array with elements on the corresponding diagonal
+        """
+        if main_diagonal:
+            return self.board.diagonal()
+        else:
+            return np.flipud(self.board).diagonal()
+
     def make_move(self, position: Tuple[int, int], move: int) -> None:
         """
         Plays the move in the board.
