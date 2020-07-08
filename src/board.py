@@ -2,7 +2,8 @@
 This file defines the board of the game Mathematico alongside with the move
 generation and formatting of the text output of the board.
 """
-from typing import Tuple, List, Union
+from typing import Tuple, Iterator
+import numpy as np
 
 
 class Board:
@@ -12,12 +13,13 @@ class Board:
     inside our array.
     """
     SIZE = 5
+    EMPTY = 0
 
     def __init__(self):
-        self._board: List[List[Union[int, None]]] = [
-            [None for _ in range(self.SIZE)] for _ in range(self.SIZE)
-        ]
-        self.occupied_cells = 0
+        self.board: np.ndarray = np.full((Board.SIZE, Board.SIZE), Board.EMPTY)
+        """Store the board as 5x5 np.ndarray, empty values are Board.EMPTY"""
+        self.occupied_cells: int = 0
+        """Number of non-empty cells in the board"""
 
     def __str__(self):
         """
@@ -39,30 +41,47 @@ class Board:
         """
         long_line = "+--+--+--+--+--+\n"
         result = long_line
-        for row in self._board:
+        for row in self.board:
             result += '|'
             for col in row:
-                result += '  ' if col is None else f"{col:2d}"
+                result += '  ' if col == Board.EMPTY else f"{col:2d}"
                 result += '|'
             result += '\n' + long_line
         return result
 
-    def make_move(self, position: Tuple[int, int], move: int):
+    def row(self, n) -> np.ndarray:
+        """
+        Returns particular row as np.ndarray. Does not perform boundaries check.
+
+        :param n: which row to return
+        :return: n-th row of the board
+        """
+        return self.board[n]
+
+    def col(self, n) -> np.ndarray:
+        """
+        Returns particular column as np.ndarray. Does not perform boundaries
+        checking.
+
+        :param n: which column to return
+        :return: n-th column of the board
+        """
+        return self.board.T[n]
+
+    def make_move(self, position: Tuple[int, int], move: int) -> None:
         """
         Plays the move in the board.
 
         :param position: tuple of row, column coordinates
         :param move: integer to be placed
-        :return: returns this object
+        :return: None
         """
-        row, col = position
-        if self._board[row][col] is not None:
-            raise ValueError(f"The position {(row, col)} is invalid")
-        self._board[row][col] = move
+        if self.board[position] != Board.EMPTY:
+            raise ValueError(f"The position {position} is invalid")
+        self.board[position] = move
         self.occupied_cells += 1
-        return self
 
-    def possible_moves(self) -> List[Tuple[int, int]]:
+    def possible_moves(self) -> Iterator[Tuple[int, int]]:
         """
         Returns a list of possible moves from given position encoded as tuples
         of row and column coordinates, the result can be directly passed to
@@ -70,17 +89,7 @@ class Board:
 
         :return: list of empty positions on the board
         """
-        moves = []
         for i in range(self.SIZE):
             for j in range(self.SIZE):
-                if self._board[i][j] is None:
-                    moves.append((i, j))
-        return moves
-
-    def get(self) -> List[List[Union[int, None]]]:
-        """
-        Provides the access to the board representation in form of the 2D array.
-
-        :return: the current board as 2D array
-        """
-        return self._board
+                if self.board[i][j] == Board.EMPTY:
+                    yield i, j
