@@ -35,4 +35,29 @@ def check_pair(line: Dict[Union[int, None], int], available: Dict[int, int])\
             chance *= (available_cards - i - available[number])
             chance *= 1 / (available_cards - i - 1)
         value += chance
+    # TODO: empty space
     return value
+
+
+def check_two_pair(line: Dict[Union[int, None], int],
+                   available: Dict[int, int]) -> float:
+    """
+    Checks whether un the future, there might be two pairs found in the line
+    and computes expected score for such an event.
+
+    :param line: dictionary with all symbols in one line of board, including
+        None for representing free space
+    :param available: dictionary with available cards and their amount, these
+        cards might be drawn in the future with weighted probability
+    :return: expected score for drawing two pair
+    """
+    if None not in line:  # no empty space left
+        return 0
+    available_cards = sum(available.values())
+    value = 0
+    pair_found = False
+    for number, count in line.items():
+        if count >= 3 or (pair_found and count == 2):
+            # two pair present or impossible
+            return 0
+
