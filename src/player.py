@@ -9,6 +9,7 @@ import random as rnd
 from typing import List, Dict, Tuple, Union
 from copy import deepcopy
 from abc import abstractmethod, ABC
+import numpy as np
 
 
 class Player(ABC):
@@ -117,7 +118,7 @@ class SimpleSimulationPlayer(HistoryPlayer):
 
     Note: the algorithm is forced to make move by time
     """
-    MOVE_TIME = 1_000_000_000  # number of nano-seconds 10-9
+    MOVE_TIME = 15_000_000_000  # number of nano-seconds 10-9
 
     class Node:
         def __init__(self, board: Board, position: Tuple[int, int],
@@ -134,8 +135,7 @@ class SimpleSimulationPlayer(HistoryPlayer):
             self.board = board
             self.position = position
             self.available_cards = available_cards
-            self.total_score = 0
-            self.simulations = 1  # prevents division by zero
+            self.scores = []
 
         def simulate(self):
             """
@@ -145,13 +145,13 @@ class SimpleSimulationPlayer(HistoryPlayer):
             """
             board = deepcopy(self.board)
             cards = deepcopy(self.available_cards)
+            moves = list(board.possible_moves())
             rnd.shuffle(cards)
-            while board.possible_moves():
-                card = cards.pop()
-                position = rnd.choice(board.possible_moves())
-                board.make_move(position, card)
-            self.total_score += evaluate(board)
-            self.simulations += 1
+            rnd.shuffle(moves)
+
+            for move in moves:
+                board.make_move(move, cards.pop())
+            self.scores.append(evaluate(board))
 
     def __init__(self, split: bool = False, verbose: bool = False):
         """
@@ -189,16 +189,10 @@ class SimpleSimulationPlayer(HistoryPlayer):
         """
         start_time = time_ns()
         end_time = start_time + self.MOVE_TIME
-        removal_point = self.MOVE_TIME / len(nodes)
-        removal_time = start_time + removal_point
-
         while time_ns() < end_time:
-            for node in nodes:
-                node.simulate()
-            if self.split and time_ns() >= removal_time:
-                nodes.sort(key=lambda n: n.total_score, reverse=True)
-                nodes.pop()
-                removal_time += removal_point
+            for _ in range(10):
+                for node in nodes:
+                    node.simulate()
 
     def move(self, number: int):
         """
@@ -212,9 +206,13 @@ class SimpleSimulationPlayer(HistoryPlayer):
         nodes = self._spawn_nodes(number)
         if len(nodes) != 1:
             self._run_simulations(nodes)
-        best_node = max(nodes, key=lambda n: n.total_score)
-        if self.verbose:
-            print(f"Simulations:\t{best_node.simulations:4d}\t"
-                  f"Score: {best_node.total_score / best_node.simulations:.2f}",
-                  flush=True)
+        best_node = max(nodes, key=lambda n: sum(n.scores))
+        if self.verbose and len(nodes) > 1:
+            mean = np.mean(best_node.scores)
+            std = np.std(best_node.scores)
+            confidence95 = 1.960 * std / np.sqrt(len(best_node.scores))
+            print(
+                f"Simulations:{len(best_node.scores):5d}\t|\t"
+                f"95% of score: {mean:.2f} ± {confidence95:.2f}"
+            )
         self.board.make_move(best_node.position, number)
