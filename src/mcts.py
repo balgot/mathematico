@@ -1,7 +1,8 @@
 """
 In this file, we define a Monte Carlo algorithm for solving the game of
 Mathematico. We will rely on the random roll-outs and the search will be limited
-by the time.
+by the time. In addition, in this file we will consider only states in which
+the player makes move.
 """
 from .player import HistoryPlayer
 from .board import Board
@@ -10,6 +11,75 @@ from time import time
 from typing import Tuple, Dict, List, Union
 from copy import deepcopy
 import random as rnd
+
+
+
+
+class GameState:
+    """
+    Represents complete information about one state of the game, including the
+    board, history and available cards.
+    """
+    def __init__(self, board: Board, history: List[int], deck: List[int]):
+        """
+        :param board: board corresponding to current state
+        :param history: list of the cards already played
+        :param deck: list with the cards that might be drawn
+        """
+        self.board = board
+        self.history = history
+        self.deck = deck
+
+
+class Node:
+    """
+    Represents a node in the game tree. Carries information about associated
+    game state, visit count and total score, as well as reference to the parent
+    and child nodes. Can pick the best child, simulate the game...
+    """
+    def __init__(self, state: GameState, parent: 'Node' = None):
+        """
+        :param state: game state associated with the node
+        :param parent: parent of this node
+        """
+        self.state: GameState = state
+        self.parent: Node = parent
+        self.visit_count: int = 0
+        self.score: int = 0
+        self.children: List[Node] = []
+
+    def is_terminal(self) -> bool:
+        """
+        :return: True if this node is leaf node
+        """
+        return self.state.board.occupied_cells == Board.SIZE ** 2
+
+    def simulate(self) -> int:
+        """
+        Performs single simulation from current node to the leaf node. Returns
+        the achieved score at the leaf.
+
+        :return: score of the simulation
+        """
+        if self.is_terminal():
+            return Evaluator.evaluate(self.state.board)
+
+        board = deepcopy(self.state.board)
+        cards = deepcopy(self.state.deck)
+        available_moves = board.possible_moves()
+
+        rnd.shuffle(cards)
+        rnd.shuffle(available_moves)
+        for i, move in enumerate(available_moves):
+            board.make_move(move, cards[i])
+        return Evaluator.evaluate(board)
+
+
+
+
+
+
+
 
 
 class State:
