@@ -3,56 +3,66 @@ In this file, we define the interface for a player, as well as simple
 implementations of the player.
 """
 from .board import Board
-from .eval import Evaluator
+from .eval import evaluate
 from time import time_ns
 import random as rnd
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from copy import deepcopy
+from abc import abstractmethod, ABC
+import numpy as np
 
 
-class Player:
+class Player(ABC):
     """
     The interface for a generic player class, which should provide methods for
-    interaction with the <game> class.
+    interaction with the <game> class. Required methods are move() and
+    get_board().
     """
-    def __init__(self):
-        self.board = Board()
-
-    def move(self, number: int) -> None:
+    @abstractmethod
+    def move(self, card_number: int) -> None:
         """
         Given the next number, places the number on the board.
 
-        :param number: the next card to be played
+        :param card_number: the next card to be played
         :return: None
         """
         pass
 
-    def get_board(self) -> Board:
-        return self.board
+    @abstractmethod
+    def get_board(self) -> Union[List[List[int]], Board]:
+        """
+        :return: current board as 2D array or Board instance
+        """
+        pass
 
 
 class RandomPlayer(Player):
     """
     Random player plays moves randomly on empty positions.
     """
-    def move(self, number: int):
-        possible_moves = self.board.possible_moves()
+    def __init__(self):
+        self.board = Board()
+
+    def move(self, number: int) -> None:
+        possible_moves = list(self.board.possible_moves())
         if not possible_moves:
             raise IndexError("No moves available")
         picked_move = rnd.choice(possible_moves)
         self.board.make_move(picked_move, number)
 
+    def get_board(self) -> Board:
+        return self.board
 
-class HumanPlayer(Player):
+
+class HumanPlayer(RandomPlayer):
     """
     Human player takes inputs from console after printing the board and the
     next move number.
     """
     def move(self, number: int):
-        print(self.board)
-        print(f"Next card:\t{number}")
+        print(self.board, f"Next card:\t{number}", sep='\n')
         row, col = None, None
-        moves = self.board.possible_moves()
+        moves = list(self.board.possible_moves())
 
         while (row, col) not in moves:
             row = int(input(f"Row number [0, {Board.SIZE}):\t"))
@@ -66,7 +76,7 @@ class HistoryPlayer(Player):
     provides access to the cards already drawn and cards that might be drawn.
     """
     def __init__(self):
-        super().__init__()
+        self.board = Board()
         self.history: List[int] = []
         self.available_cards: Dict[int, int] = {}
         for card in range(1, 14):
@@ -95,6 +105,9 @@ class HistoryPlayer(Player):
         self.history.append(number)
         self.available_cards[number] -= 1
 
+    def get_board(self):
+        return self.board
+
 
 class SimpleSimulationPlayer(HistoryPlayer):
     """
@@ -105,7 +118,7 @@ class SimpleSimulationPlayer(HistoryPlayer):
 
     Note: the algorithm is forced to make move by time
     """
-    MOVE_TIME = 1_000_000_000  # number of nano-seconds 10-9
+    MOVE_TIME = 15_000_000_000  # number of nano-seconds 10-9
 
     class Node:
         def __init__(self, board: Board, position: Tuple[int, int],
@@ -122,8 +135,7 @@ class SimpleSimulationPlayer(HistoryPlayer):
             self.board = board
             self.position = position
             self.available_cards = available_cards
-            self.total_score = 0
-            self.simulations = 1  # prevents division by zero
+            self.scores = []
 
         def simulate(self):
             """
@@ -133,13 +145,13 @@ class SimpleSimulationPlayer(HistoryPlayer):
             """
             board = deepcopy(self.board)
             cards = deepcopy(self.available_cards)
+            moves = list(board.possible_moves())
             rnd.shuffle(cards)
-            while board.possible_moves():
-                card = cards.pop()
-                position = rnd.choice(board.possible_moves())
-                board.make_move(position, card)
-            self.total_score += Evaluator.evaluate(board)
-            self.simulations += 1
+            rnd.shuffle(moves)
+
+            for move in moves:
+                board.make_move(move, cards.pop())
+            self.scores.append(evaluate(board))
 
     def __init__(self, split: bool = False, verbose: bool = False):
         """
@@ -177,16 +189,10 @@ class SimpleSimulationPlayer(HistoryPlayer):
         """
         start_time = time_ns()
         end_time = start_time + self.MOVE_TIME
-        removal_point = self.MOVE_TIME / len(nodes)
-        removal_time = start_time + removal_point
-
         while time_ns() < end_time:
-            for node in nodes:
-                node.simulate()
-            if self.split and time_ns() >= removal_time:
-                nodes.sort(key=lambda n: n.total_score, reverse=True)
-                nodes.pop()
-                removal_time += removal_point
+            for _ in range(10):
+                for node in nodes:
+                    node.simulate()
 
     def move(self, number: int):
         """
@@ -200,9 +206,13 @@ class SimpleSimulationPlayer(HistoryPlayer):
         nodes = self._spawn_nodes(number)
         if len(nodes) != 1:
             self._run_simulations(nodes)
-        best_node = max(nodes, key=lambda n: n.total_score)
-        if self.verbose:
-            print(f"Simulations:\t{best_node.simulations:4d}\t"
-                  f"Score: {best_node.total_score / best_node.simulations:.2f}",
-                  flush=True)
+        best_node = max(nodes, key=lambda n: sum(n.scores))
+        if self.verbose and len(nodes) > 1:
+            mean = np.mean(best_node.scores)
+            std = np.std(best_node.scores)
+            confidence95 = 1.960 * std / np.sqrt(len(best_node.scores))
+            print(
+                f"Simulations:{len(best_node.scores):5d}\t|\t"
+                f"95% of score: {mean:.2f} ± {confidence95:.2f}"
+            )
         self.board.make_move(best_node.position, number)

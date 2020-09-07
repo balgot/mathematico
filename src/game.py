@@ -5,8 +5,9 @@ current number, and evaluating the positions.
 """
 import random as rnd
 from .player import Player
-from .eval import Evaluator as Eval
+from .eval import evaluate
 from .board import Board
+from typing import Union
 
 
 class Game:
@@ -23,7 +24,24 @@ class Game:
         self.moves_played = 0
         self.players = []
 
-    def take_next_card(self):
+    def __str__(self):
+        """
+        String representation of the game with full description of the current
+        state of the game, including hidden information about the deck.
+
+        :return: string representation of the current game state
+        """
+        r = f"Moves played:\t{self.available_cards[:self.moves_played]}\n"
+        r += "Current card:\t"
+        if self.finished():
+            r += "None"
+        else:
+            r += str(self.available_cards[self.moves_played])
+        r += f"\nMove number:\t{self.moves_played}\n"
+        r += f"Players:\t{self.players}"
+        return r
+
+    def take_next_card(self) -> Union[None, int]:
         """
         Picks next card randomly from available_cards.
 
@@ -36,7 +54,7 @@ class Game:
         self.moves_played += 1
         return card
 
-    def add_player(self, player: Player):
+    def add_player(self, player: Player) -> int:
         """
         Adds the player to the game. If the game is in progress, throws
         ValueError. To reference the final results for the added player, returns
@@ -60,19 +78,6 @@ class Game:
         return self.moves_played >= Board.SIZE ** 2 \
             or self.moves_played >= len(self.available_cards)
 
-    def __str__(self):
-        """
-        String representation of the game with full description of the current
-        state of the game, including hidden information about the deck.
-
-        :return: string representation of the current game state
-        """
-        r = f"Moves played:\t{self.available_cards[:self.moves_played]}\n" \
-            f"Current card:\t{'None' if self.finished() else self.available_cards[self.moves_played]}\n" \
-            f"Move number:\t{'None' if self.finished() else self.moves_played}\n" \
-            f"Players:\t{self.players}"
-        return r
-
     def start(self, verbose=False):
         """
         Simulates one game, for each round picks one card, lets players start
@@ -87,8 +92,6 @@ class Game:
             assert next_card is not None
             if verbose:
                 print(self)
-                print(f"Current card: {next_card}")
             for player in self.players:
                 player.move(next_card)
-        scores = [Eval.evaluate(player.get_board()) for player in self.players]
-        return scores
+        return [evaluate(player.get_board()) for player in self.players]
