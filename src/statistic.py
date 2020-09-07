@@ -4,7 +4,32 @@ statistic evaluation of all possible moves. The algorithm for evaluating any
 (incomplete) position will be a generalisation of the main evaluation algorithm.
 """
 from .eval import Evaluator
-from typing import Dict, Union
+from typing import Dict, Union, Optional
+
+
+
+"""
+For any combination, say four of a kind, we denote the probability of that 
+combination occurring in given set of 5 squares of the board as following:
+
+     P(FOUR_OF_A_KIND) = P(four 1s) + ... + P(four 13s)
+
+
+"""
+
+
+def check_n_of_a_kind(n: int, line: Dict[int], available: Dict[int, int],
+                      empty_squares: int, available_all: int):
+    chance = 0
+    for candidate in range(2, 14):
+        if line[candidate] + empty_squares >= n:
+            multiplier = 1
+            for pick in range(n - line[candidate]):
+                multiplier *= available[candidate] / (available_all + pick)
+            chance += multiplier
+    print(f"N-of-a-kind chance: {chance:.2f}")
+    return chance
+
 
 
 def check_pair(line: Dict[Union[int, None], int], available: Dict[int, int])\
