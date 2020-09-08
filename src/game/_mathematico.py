@@ -3,14 +3,31 @@ Define simple class for playing a single game of Mathematico.
 """
 import random as rnd
 from typing import Union, List
-from abc import ABC
+from abc import ABC, abstractmethod
+from ._board import Board
 
 
 class Player(ABC):
-    def get_board(self):
+    """
+    The interface for a generic player class, which should provide methods for
+    interaction with the <game> class. Required methods are move() and
+    get_board().
+    """
+    @abstractmethod
+    def move(self, card_number: int) -> None:
+        """
+        Given the next number, places the number on the board.
+
+        :param card_number: the next card to be played
+        :return: None
+        """
         pass
 
-    def move(self, card: int):
+    @abstractmethod
+    def get_board(self) -> Board:
+        """
+        :return: current board as a Board instance
+        """
         pass
 
 

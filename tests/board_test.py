@@ -1,4 +1,4 @@
-from src.board import Board
+from src.game import Board
 import numpy as np
 
 
@@ -8,6 +8,7 @@ def test_empty_board():
     """
     board = Board()
     assert board.occupied_cells == 0
+    board.integrity_check()
     assert len(list(board.possible_moves())) == Board.SIZE ** 2
 
 
@@ -51,10 +52,26 @@ def test_row():
     for i in range(Board.SIZE):
         assert all(board.row(i) == np.full((Board.SIZE,), Board.EMPTY))
     board.make_move((0, 1), 1)
+    board.integrity_check()
     board.make_move((0, 2), 3)
+    board.integrity_check()
     board.make_move((0, 4), 13)
+    board.integrity_check()
     expected_row = np.asarray([Board.EMPTY, 1, 3, Board.EMPTY, 13])
     assert all(board.row(0) == expected_row)
+
+
+def test_row_rle():
+    """
+    Tests basic properties of the row_rle() function.
+    """
+    board = Board()
+    board.make_move((0, 1), 1)
+    board.make_move((0, 2), 3)
+
+    for i in range(1, Board.SIZE):
+        assert len(board.row_rle(i)) == 0
+    assert board.row_rle(0) == {1: 1, 3: 1}
 
 
 def test_col():
@@ -66,10 +83,21 @@ def test_col():
     for i in range(Board.SIZE):
         assert all(board.col(i) == np.full((Board.SIZE,), Board.EMPTY))
     board.make_move((0, 1), 1)
+    board.integrity_check()
     board.make_move((1, 1), 3)
+    board.integrity_check()
     board.make_move((4, 1), 13)
+    board.integrity_check()
     expected_col = np.asarray([1, 3, Board.EMPTY, Board.EMPTY, 13])
     assert all(board.col(1) == expected_col)
+
+
+def test_col_rle():
+    pass
+
+
+def test_diag():
+    pass
 
 
 def test_make_move():
@@ -93,6 +121,10 @@ def test_make_move():
     except ValueError:
         raised = True
     assert raised
+
+
+def test_unmake_move():
+    pass
 
 
 def test_possible_moves():

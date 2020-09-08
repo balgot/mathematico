@@ -2,8 +2,41 @@
 This file defines the board of the game Mathematico alongside with the move
 generation and formatting of the text output of the board.
 """
-from typing import Tuple, Iterator, Dict
+from typing import Tuple, Iterator, Dict, Any, Iterable
 import numpy as np
+
+
+def add(dictionary: Dict, key: Any, value: Any = 1) -> None:
+    """
+    Adds specified value to dictionary, or, if not present, creates new entry
+    containing the value.
+
+    :param dictionary: dict to modify
+    :param key: key to update
+    :param value: value to add
+    :return: None
+    """
+    if key in dictionary:
+        dictionary[key] += value
+    else:
+        dictionary[key] = value
+
+
+def rle(data: Iterable) -> Dict[Any, int]:
+    """
+    Performs run length encoding on the data. Does not modify the original data.
+    Expected time complexity: O(n). Ignores Board.EMPTY
+
+    :param data: list of elements (in any order)
+    :return: dictionary with keys being the elements of the data and values
+        being the occurrences
+    """
+    result = {}
+    for elem in data:
+        add(result, elem, 1)
+    if Board.EMPTY in result:
+        result.pop(Board.EMPTY)
+    return result
 
 
 class Board:
@@ -13,7 +46,7 @@ class Board:
     inside our array.
 
     Attributes
-        - board: 2D array of the placed cards
+        - board: 2D array, empty values are stored as Board.EMPTY
         - occupied_cells: number of occupied cells
 
     Methods
@@ -33,15 +66,11 @@ class Board:
 
     def __init__(self):
         self.board: np.ndarray = np.full((Board.SIZE, Board.SIZE), Board.EMPTY)
-        """Store the board as 5x5 np.ndarray, empty values are Board.EMPTY"""
-
         self.rows_rle = [dict() for _ in range(Board.SIZE)]
         self.cols_rle = [dict() for _ in range(Board.SIZE)]
         self.main_diagonal_rle = dict()
         self.anti_diagonal_rle = dict()
-
         self.occupied_cells: int = 0
-        """Number of non-empty cells in the board"""
 
     def __str__(self) -> str:
         """
@@ -71,27 +100,26 @@ class Board:
             result += '\n' + long_line
         return result
 
-    def integrity_check(self) -> Tuple[bool, str]:
+    def integrity_check(self) -> None:
         """
-        :return: True if the integrity test passes
+        Runs the integrity check of the board.
+        :rai
         """
-        non_empty = len([x != Board.EMPTY for x in self.board.flatten()])
+        non_empty = sum([x != Board.EMPTY for x in self.board.flatten()])
         if non_empty != self.occupied_cells:
-            return False, "Occupied cells mismatch"
-        from src.game import utils
+            raise RuntimeError("Occupied cells mismatch")
         for row in range(self.SIZE):
-            if self.rows_rle[row] != utils.rle(self.row(row)):
-                return False, "Rle of row mismatch"
+            if self.rows_rle[row] != rle(self.row(row)):
+                raise RuntimeError("Rle of row mismatch")
         for col in range(self.SIZE):
-            if self.cols_rle[col] != utils.rle(self.col(col)):
-                return False, "Rle of col mismatch"
-        if self.main_diagonal_rle != utils.rle(self.diag(True)):
-            return False, "Rle of main-diagonal mismatch"
-        if self.anti_diagonal_rle != utils.rle(self.diag(False)):
-            return False, "Rle of anti-diagonal mismatch"
-        return True, ""
+            if self.cols_rle[col] != rle(self.col(col)):
+                raise RuntimeError("Rle of col mismatch")
+        if self.main_diagonal_rle != rle(self.diag(True)):
+            raise RuntimeError("Rle of main diagonal mismatch")
+        if self.anti_diagonal_rle != rle(self.diag(False)):
+            raise RuntimeError("Rle of anti diagonal mismatch")
 
-    def row(self, n) -> np.ndarray:
+    def row(self, n: int) -> np.ndarray:
         """
         :param n: which row to return
         :return: n-th row of the board
@@ -132,7 +160,11 @@ class Board:
             return np.flipud(self.board).diagonal()
 
     def diag_rle(self, main_diagonal: bool = True) -> Dict[int, int]:
-        """TODO"""
+        """
+        :param main_diagonal: if True, the main diagonal is returned, otherwise
+            the anti diagonal
+        :return: rle encoding of the main/anti-diagonal
+        """
         return self.main_diagonal_rle \
             if main_diagonal \
             else self.anti_diagonal_rle
@@ -152,14 +184,12 @@ class Board:
         self.occupied_cells += 1
 
         row, col = position
-        self.rows_rle[row][move] = (self.rows_rle[row][move] or 0) + 1
-        self.cols_rle[col][move] = (self.cols_rle[col][move] or 0) + 1
+        add(self.rows_rle[row], key=move, value=1)
+        add(self.cols_rle[col], key=move, value=1)
         if row == col:
-            self.main_diagonal_rle[move] = \
-                (self.main_diagonal_rle[move] or 0) + 1
+            add(self.main_diagonal_rle, key=move, value=1)
         if row + col + 1 == Board.SIZE:
-            self.anti_diagonal_rle[move] = \
-                (self.anti_diagonal_rle[move] or 0) + 1
+            add(self.anti_diagonal_rle, key=move, value=1)
 
     def unmake_move(self, position: Tuple[int, int]) -> int:
         """

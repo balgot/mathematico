@@ -1,7 +1,5 @@
-from src.eval import evaluate, Points
-from src.board import Board
+from src.game import Points, evaluate, Board
 from typing import List
-import numpy as np
 
 
 def eval_list(array: List[List[int]]) -> int:
@@ -12,8 +10,9 @@ def eval_list(array: List[List[int]]) -> int:
     :return: score of the board
     """
     board = Board()
-    board.board = np.asarray(array)
-    board.occupied_cells = Board.SIZE ** 2
+    for row in range(Board.SIZE):
+        for col in range(Board.SIZE):
+            board.make_move((row, col), array[row][col])
     return evaluate(board)
 
 
