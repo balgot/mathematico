@@ -85,7 +85,7 @@ class HistoryPlayer(Player):
     def _get_available_cards(self) -> List[int]:
         """
         From the current state of the game create a list of cards that might be
-        drawn from <self.available_cards>.
+        drawn from <self._available_cards>.
 
         :return: list of available cards with repetition
         """

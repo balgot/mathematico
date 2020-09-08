@@ -33,7 +33,7 @@ is non-zero, the player is awarded *10 bonus points* for each such diagonal.
                
 
 For each row, column and diagonal, only the highest score is applied, i.e. it is forbidden
-to combine two scoring rules for one line.
+to combine two scoring rules for one line. 
 
 
 ## Models

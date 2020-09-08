@@ -51,7 +51,7 @@ class Board:
 
     def row(self, n) -> np.ndarray:
         """
-        Returns particular row as np.ndarray. Does not perform boundaries check.
+        Returns particular row as np.ndarray.
 
         :param n: which row to return
         :return: n-th row of the board
@@ -60,8 +60,7 @@ class Board:
 
     def col(self, n) -> np.ndarray:
         """
-        Returns particular column as np.ndarray. Does not perform boundaries
-        checking.
+        Returns particular column as np.ndarray.
 
         :param n: which column to return
         :return: n-th column of the board
@@ -99,7 +98,7 @@ class Board:
         of row and column coordinates, the result can be directly passed to
         <make_move>.
 
-        :return: list of empty positions on the board
+        :return: iterator over possible moves
         """
         for i in range(self.SIZE):
             for j in range(self.SIZE):
