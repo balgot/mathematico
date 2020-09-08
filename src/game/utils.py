@@ -12,8 +12,5 @@ def rle(data: Iterable) -> Dict[Any, int]:
     """
     result = {}
     for elem in data:
-        if elem in result:
-            result[elem] += 1
-        else:
-            result[elem] = 1
+        result[elem] = (result[elem] or 0) + 1
     return result
