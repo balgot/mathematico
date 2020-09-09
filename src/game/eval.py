@@ -2,8 +2,8 @@
 In this file we provide the definition of the evaluator class which can be used
 to assign the resulting scores to the board.
 """
-from typing import Union, List, Any, Dict
-from ._board import Board
+from typing import Dict
+from .board import Board
 
 
 class Points:

@@ -6,8 +6,8 @@ from typing import Union, List
 from abc import ABC, abstractmethod
 import time
 
-from ._board import Board
-from ._eval import evaluate
+from .board import Board
+from .eval import evaluate
 
 
 class Player(ABC):
