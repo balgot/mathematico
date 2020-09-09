@@ -76,7 +76,7 @@ def evaluate(board: Board) -> int:
     :return: result score
     """
     if board.occupied_cells != Board.SIZE ** 2:
-        raise ValueError("Board is not empty")
+        raise ValueError(f"Board is not full - {board}")
 
     total_score = 0
     for i in range(Board.SIZE):

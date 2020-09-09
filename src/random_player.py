@@ -7,6 +7,9 @@ class RandomPlayer(Player):
         self.board: Board = Board()
         self.seed = seed
 
+    def reset(self):
+        self.board = Board()
+
     def get_board(self) -> Board:
         return self.board
 
@@ -15,4 +18,4 @@ class RandomPlayer(Player):
         if not possible_moves:
             raise IndexError("No more moves possible")
         picked_move = rnd.Random(self.seed).choice(possible_moves)
-        return picked_move
+        self.board.make_move(picked_move, card_number)

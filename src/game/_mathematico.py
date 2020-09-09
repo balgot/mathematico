@@ -4,7 +4,10 @@ Define simple class for playing a single game of Mathematico.
 import random as rnd
 from typing import Union, List
 from abc import ABC, abstractmethod
+import time
+
 from ._board import Board
+from ._eval import evaluate
 
 
 class Player(ABC):
@@ -19,6 +22,15 @@ class Player(ABC):
         Given the next number, places the number on the board.
 
         :param card_number: the next card to be played
+        :return: None
+        """
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        Resets the player to initial state at the beginning of the game.
+
         :return: None
         """
         pass
@@ -132,3 +144,35 @@ class Mathematico:
             for player in self.players:
                 player.move(next_card)
         return [evaluate(player.get_board()) for player in self.players]
+
+
+class Arena:
+    def __init__(self):
+        self.players = []
+        self.results = []
+
+    def reset(self):
+        for player_results in self.results:
+            player_results.clear()
+
+    def add_player(self, player):
+        self.players.append(player)
+        self.results.append([])
+
+    def run(self, steps=100, verbose=True, seed=None):
+        self.reset()
+        start = time.time()
+        for _ in range(steps):
+            game = Mathematico(seed=seed)
+            for player in self.players:
+                game.add_player(player)
+            results = game.play(verbose=False)
+            for idx, result in enumerate(results):
+                self.results[idx].append(result)
+            for player in self.players:
+                player.reset()
+        if verbose:
+            total_time = time.time() - start
+            print(f"Steps run: {steps}\tElapsed time: {total_time}")
+        return self.results
+
