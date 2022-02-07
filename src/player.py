@@ -16,7 +16,7 @@ import numpy as np
 
 class HumanPlayer(RandomPlayer):
     """
-    Human player takes inputs from console after printing the board and the
+    Human player takes inputs from console after printing the grid and the
     next move number.
     """
     def move(self, number: int):
@@ -86,7 +86,7 @@ class SimpleSimulationPlayer(HistoryPlayer):
             """
             Initialize the node.
             
-            :param board: board to be referenced and changed with the move
+            :param board: grid to be referenced and changed with the move
                 already played
             :param position: position of the move, used for finding the best
                 position

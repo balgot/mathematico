@@ -4,10 +4,10 @@ from typing import List
 
 def eval_list(array: List[List[int]]) -> int:
     """
-    Simulates evaluation on the 2d list by creating board artificially.
+    Simulates evaluation on the 2d list by creating grid artificially.
 
-    :param array: array of board to be evaluated
-    :return: score of the board
+    :param array: array of grid to be evaluated
+    :return: score of the grid
     """
     board = Board()
     for row in range(Board.SIZE):

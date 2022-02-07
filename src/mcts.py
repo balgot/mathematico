@@ -5,8 +5,8 @@ by the time. In addition, in this file we will consider only states in which
 the player makes move.
 """
 from .player import HistoryPlayer
-from .board import Board
-from .eval import Evaluator
+from .game.board import Board
+from .game.eval import evaluate
 from time import time
 from typing import Tuple, Dict, List, Union
 from copy import deepcopy
@@ -18,11 +18,11 @@ import random as rnd
 class GameState:
     """
     Represents complete information about one state of the game, including the
-    board, history and available cards.
+    grid, history and available cards.
     """
     def __init__(self, board: Board, history: List[int], deck: List[int]):
         """
-        :param board: board corresponding to current state
+        :param board: grid corresponding to current state
         :param history: list of the cards already played
         :param deck: list with the cards that might be drawn
         """
@@ -62,7 +62,7 @@ class Node:
         :return: score of the simulation
         """
         if self.is_terminal():
-            return Evaluator.evaluate(self.state.board)
+            return evaluate(self.state.board)
 
         board = deepcopy(self.state.board)
         cards = deepcopy(self.state.deck)
@@ -72,7 +72,7 @@ class Node:
         rnd.shuffle(available_moves)
         for i, move in enumerate(available_moves):
             board.make_move(move, cards[i])
-        return Evaluator.evaluate(board)
+        return evaluate(board)
 
 
 
@@ -97,10 +97,10 @@ class State:
         Initialize the state of the game.
 
         :param parent: parent node in the tree
-        :param board: board to be referenced
+        :param board: grid to be referenced
         :param deck: available cards to be drawn
         :param nature_move: True if the card should be drawn, False if it should
-            be placed on the board
+            be placed on the grid
         """
         self.parent = parent
         self.board = board
@@ -116,7 +116,7 @@ class State:
 
     def rollout(self) -> int:
         """
-        Performs random simulation from the current board.
+        Performs random simulation from the current grid.
 
         :return: the score at the end of the simulation
         """
@@ -129,7 +129,7 @@ class State:
             card = deck.pop()
             move = rnd.choice(board.possible_moves())
             board.make_move(move, card)
-        return Evaluator.evaluate(board)
+        return evaluate(board)
 
     def select(self) -> 'State':
         """
@@ -140,6 +140,7 @@ class State:
         if self.is_terminal:
             return self
         if self.fully_expanded:
+            return self.board # TODO
 
 
 

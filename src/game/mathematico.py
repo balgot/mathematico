@@ -19,7 +19,7 @@ class Player(ABC):
     @abstractmethod
     def move(self, card_number: int) -> None:
         """
-        Given the next number, places the number on the board.
+        Given the next number, places the number on the grid.
 
         :param card_number: the next card to be played
         :return: None
@@ -38,7 +38,7 @@ class Player(ABC):
     @abstractmethod
     def get_board(self) -> Board:
         """
-        :return: current board as a Board instance
+        :return: current grid as a Board instance
         """
         pass
 
@@ -96,7 +96,7 @@ class Mathematico:
         Picks next card randomly from _available_cards.
 
         :return: the number of the next card or None if the number of moves is
-            sufficient to fill the board
+            sufficient to fill the grid
         """
         if self.finished():
             return None
@@ -119,7 +119,7 @@ class Mathematico:
 
     def finished(self) -> bool:
         """
-        Checks whether the game is finished either by filling the board or by
+        Checks whether the game is finished either by filling the grid or by
         drawing all cards from the deck.
 
         :return: true if no more cards will be drawn
