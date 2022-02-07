@@ -29,14 +29,14 @@ class Evaluator:
     Board (i.e. without empty cells), the Evaluator calculates the final score.
     """
     DIAGONAL_BONUS = 10
-    TWO_OF_A_KIND = 10
-    TWO_OF_A_KIND_TWICE = 20
+    PAIR = 10
+    TWO_PAIRS = 20
     THREE_OF_A_KIND = 40
-    FOUR_OF_A_KIND = 160  # excluding case 1 1 1 1
+    FOUR_OF_A_KIND = 160
     FOUR_ONES = 200
-    FULL_HOUSE = 80  # x, x, x, y, y
-    FULL_HOUSE_1_1_1_13_13 = 100
-    STRAIGHT_FLUSH = 50  # like 1 2 3 4 5
+    FULL_HOUSE = 80
+    FULL_HOUSE_1_13 = 100
+    FLUSH = 50
     FLUSH_1_10_11_12_13 = 150
 
     @staticmethod
@@ -57,13 +57,13 @@ class Evaluator:
             if all(x in code for x in [1, 10, 11, 12, 13]):
                 return Evaluator.FLUSH_1_10_11_12_13
             if max(line) - min(line) == 5 - 1:
-                return Evaluator.STRAIGHT_FLUSH
+                return Evaluator.FLUSH
             return 0
 
         elif len(code) == 4:
             # The only combination with four different values is a single pair,
             # and so we do not need to check any other
-            return Evaluator.TWO_OF_A_KIND
+            return Evaluator.PAIR
 
         elif len(code) == 3:
             # To have three different values, either two and two values are
@@ -71,7 +71,7 @@ class Evaluator:
             if any(x == 3 for x in code.values()):
                 return Evaluator.THREE_OF_A_KIND
             else:
-                return Evaluator.TWO_OF_A_KIND_TWICE
+                return Evaluator.TWO_PAIRS
 
         elif len(code) == 2:
             # The only possibility here is FULL_HOUSE or four of a kind, both of
@@ -82,7 +82,7 @@ class Evaluator:
                     return Evaluator.FOUR_ONES if key == 1 \
                         else Evaluator.FOUR_OF_A_KIND
             if 1 in code and 13 in code and code[1] == 3:
-                return Evaluator.FULL_HOUSE_1_1_1_13_13
+                return Evaluator.FULL_HOUSE_1_13
             return Evaluator.FULL_HOUSE
 
         else:
