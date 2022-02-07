@@ -1,7 +1,8 @@
-# mathematico
+# Mathematico
 
-In this project, we create a game **Mathematico** as described in ???. Then we will create models
-for playing the game optimally and report the achieved results. 
+A classic game, for unlimited number of players. Each player keeps track of their own board
+and after 25 random choices of numbers, the score is calculated for each player and the highest score wins.
+
 
 ## Rules of the Game
 
@@ -10,12 +11,12 @@ from the deck consisting of cards with numbers in range 1-13, with 4 copies of e
 are obliged to fill the number in one of the empty cells on their board. When the boards are full,
 resulting scores are computed (see below) for each board, and the player with the highest score wins.
 
-
 ### Scoring System
 
 For each line, row and two longest diagonals, the points are computed based on the following table
 and are summed across all rows, columns and diagonals. In addition, if the score in a diagonal 
 is non-zero, the player is awarded *10 bonus points* for each such diagonal. 
+
 *The numbers in the rows, columns and diagonals can be in __ANY__ order.*
 
  
@@ -33,22 +34,4 @@ is non-zero, the player is awarded *10 bonus points* for each such diagonal.
                
 
 For each row, column and diagonal, only the highest score is applied, i.e. it is forbidden
-to combine two scoring rules for one line. 
-
-
-## Models
-
-We created obligatory *Human* model, which accepts the next input from command line and *Random*
-model, which plays the game on random.
-
-### Other model
-
-
-## Results
-
-The humans were able to achieve average score from 250 points rto 420 points. The *Random* model
-achieved on average score *80* points...
-
-
-               
-               
+to combine two scoring rules for one line.
