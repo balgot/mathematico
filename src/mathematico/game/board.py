@@ -2,25 +2,15 @@
 This file defines the grid of the game Mathematico alongside with the move
 generation and formatting of the text output of the grid.
 """
-from typing import Tuple, Iterator, Dict, Any, Iterable
+from typing import Tuple, Iterator, Dict
 import numpy as np
-from collections import defaultdict, Counter
+from collections import defaultdict
+
+from ._utils import rle
+from .eval import evaluate_line, DIAGONAL_BONUS
+
 
 EMPTY_CELL = 0
-
-
-def rle(data: Iterable) -> Dict[Any, int]:
-    """
-    Performs run length encoding on the data. Does not modify the original data.
-    Expected time complexity: O(n). Ignores Board.EMPTY_CELL
-
-    :param data: list of elements (in any order)
-    :return: dictionary with keys being the elements of the data and values
-        being the occurrences
-    """
-    counter = Counter(data)
-    counter.pop(EMPTY_CELL, None)
-    return counter
 
 
 class Board:
@@ -32,6 +22,7 @@ class Board:
     Attributes
         - grid: 2D array, empty values are stored as Board.EMPTY_CELL
         - occupied_cells: number of occupied cells
+        - size: size of the board
 
     Methods
         - integrity_check: returns True if the integrity holds
@@ -44,6 +35,7 @@ class Board:
         - **make_move**: updates a grid with the move
         - **unmake_move**: undos the specified move
         - **possible_moves**: iterates over all possible moves
+        - **score**: score of the filled up board
     """
 
     def __init__(self, size: int = 5):
@@ -105,14 +97,14 @@ class Board:
             raise RuntimeError("Occupied cells mismatch")
 
         for row in range(len(self.grid)):
-            if self.rows_rle[row] != rle(self.row(row)):
+            if self.rows_rle[row] != rle(self.row(row), [EMPTY_CELL]):
                 raise RuntimeError("Rle of row mismatch")
         for col in range(len(self.grid)):
-            if self.cols_rle[col] != rle(self.col(col)):
+            if self.cols_rle[col] != rle(self.col(col), [EMPTY_CELL]):
                 raise RuntimeError("Rle of col mismatch")
-        if self.main_diagonal_rle != rle(self.diag(True)):
+        if self.main_diagonal_rle != rle(self.diag(True), [EMPTY_CELL]):
             raise RuntimeError("Rle of main diagonal mismatch")
-        if self.anti_diagonal_rle != rle(self.diag(False)):
+        if self.anti_diagonal_rle != rle(self.diag(False), [EMPTY_CELL]):
             raise RuntimeError("Rle of anti diagonal mismatch")
 
     def row(self, n: int) -> np.ndarray:
@@ -211,6 +203,24 @@ class Board:
                 if self.is_empty(row, col):
                     yield row, col
 
+    @property
     def size(self) -> int:
         """Return size of the board."""
         return len(self.grid)
+
+    def score(self) -> int:
+        """Calculate and return the score for the FULL board."""
+        if self.occupied_cells != self.size ** 2:
+            raise ValueError(f"Board is not full - {self}")
+
+        total_score = 0
+        for i in range(self.size):
+            total_score += evaluate_line(self.row_rle(i))
+            total_score += evaluate_line(self.col_rle(i))
+
+        for use_main_diag in [True, False]:
+            diag_score = evaluate_line(self.diag_rle(use_main_diag))
+            if diag_score != 0:
+                total_score += DIAGONAL_BONUS + diag_score
+
+        return total_score

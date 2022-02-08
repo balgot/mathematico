@@ -3,7 +3,7 @@ In this file we provide the definition of the evaluator class which can be used
 to assign the resulting scores to the grid.
 """
 from typing import Dict
-from .board import Board
+
 
 DIAGONAL_BONUS = 10
 PAIR = 10
@@ -62,26 +62,3 @@ def evaluate_line(line_rle: Dict[int, int]) -> int:
         # of the line) and less than two (max four numbers of a kind), thus
         # if we get here, there is a mistake
         raise ValueError(f"Unknown combination of values: {line_rle}")
-
-
-def evaluate(board: Board) -> int:
-    """
-    Calculates the score over the whole grid.
-
-    :param board: game plan
-    :return: result score
-    """
-    if board.occupied_cells != board.size() ** 2:
-        raise ValueError(f"Board is not full - {board}")
-
-    total_score = 0
-    for i in range(board.size()):
-        total_score += evaluate_line(board.row_rle(i))
-        total_score += evaluate_line(board.col_rle(i))
-
-    for use_main_diag in [True, False]:
-        diag_score = evaluate_line(board.diag_rle(use_main_diag))
-        if diag_score != 0:
-            total_score += DIAGONAL_BONUS + diag_score
-
-    return total_score
