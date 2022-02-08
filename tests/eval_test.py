@@ -1,30 +1,31 @@
-from src.eval import evaluate, Points
-from src.board import Board
 from typing import List
-import numpy as np
+import pytest
+
+from mathematico.game import Board
+from mathematico.game.eval import FLUSH, FULL_HOUSE, FLUSH_1_10_11_12_13, \
+    TWO_PAIRS, FOUR_ONES, THREE_OF_A_KIND, PAIR, DIAGONAL_BONUS, \
+    FULL_HOUSE_1_13, FOUR_OF_A_KIND
 
 
 def eval_list(array: List[List[int]]) -> int:
     """
-    Simulates evaluation on the 2d list by creating board artificially.
+    Simulates evaluation on the 2d list by creating grid artificially.
 
-    :param array: array of board to be evaluated
-    :return: score of the board
+    :param array: array of grid to be evaluated
+    :return: score of the grid
     """
     board = Board()
-    board.board = np.asarray(array)
-    board.occupied_cells = Board.SIZE ** 2
-    return evaluate(board)
+    for row in range(board.size):
+        for col in range(board.size):
+            board.make_move((row, col), array[row][col])
+    return board.score()
 
 
 def test_raises():
+    """Empty board cannot be scored."""
     board = Board()
-    raised = False
-    try:
-        evaluate(board)
-    except ValueError:
-        raised = True
-    assert raised
+    with pytest.raises(ValueError):
+        board.score()
 
 
 def test_evaluate_simple():
@@ -35,7 +36,7 @@ def test_evaluate_simple():
         [5, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert eval_list(board) == Points.FLUSH
+    assert eval_list(board) == FLUSH
 
 
 def test_evaluate():
@@ -47,17 +48,17 @@ def test_evaluate():
         [1, 2, 12, 4, 3]
     ]
     assert eval_list(board) == sum([
-        Points.FLUSH_1_10_11_12_13,
-        Points.TWO_PAIRS,
-        Points.FLUSH,
-        Points.FULL_HOUSE,
+        FLUSH_1_10_11_12_13,
+        TWO_PAIRS,
+        FLUSH,
+        FULL_HOUSE,
         0,
-        Points.FOUR_ONES,
-        Points.THREE_OF_A_KIND,
-        Points.PAIR,
-        Points.TWO_PAIRS,
+        FOUR_ONES,
+        THREE_OF_A_KIND,
+        PAIR,
+        TWO_PAIRS,
         0,
-        Points.PAIR + Points.DIAGONAL_BONUS,
+        PAIR + DIAGONAL_BONUS,
         0
     ])
 
@@ -71,7 +72,7 @@ def test_evaluate_all_combinations():
         [11, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert eval_list(board) == Points.PAIR
+    assert eval_list(board) == PAIR
 
     # Two pairs
     board = [
@@ -81,7 +82,7 @@ def test_evaluate_all_combinations():
         [11, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert eval_list(board) == Points.TWO_PAIRS
+    assert eval_list(board) == TWO_PAIRS
 
     # Three of a kind
     board = [
@@ -91,7 +92,7 @@ def test_evaluate_all_combinations():
         [11, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert eval_list(board) == Points.THREE_OF_A_KIND
+    assert eval_list(board) == THREE_OF_A_KIND
 
     # Full House
     board = [
@@ -101,7 +102,7 @@ def test_evaluate_all_combinations():
         [11, 2, 1, 3, 10],
         [1, 3, 5, 6, 10]
     ]
-    assert eval_list(board) == Points.FULL_HOUSE
+    assert eval_list(board) == FULL_HOUSE
 
     # Four of a kind
     board = [
@@ -111,7 +112,7 @@ def test_evaluate_all_combinations():
         [11, 2, 1, 3, 12],
         [1, 3, 5, 6, 10]
     ]
-    assert eval_list(board) == Points.FOUR_OF_A_KIND
+    assert eval_list(board) == FOUR_OF_A_KIND
 
     # Four ones
     board = [
@@ -121,7 +122,7 @@ def test_evaluate_all_combinations():
         [11, 2, 8, 3, 1],
         [9, 3, 5, 6, 10]
     ]
-    assert eval_list(board) == Points.FOUR_ONES
+    assert eval_list(board) == FOUR_ONES
 
     # Straight - from previous test
     board = [
@@ -131,7 +132,7 @@ def test_evaluate_all_combinations():
         [5, 2, 1, 3, 4],
         [1, 3, 5, 6, 2]
     ]
-    assert eval_list(board) == Points.FLUSH
+    assert eval_list(board) == FLUSH
 
     # 1 1 1 13 13
     board = [
@@ -141,7 +142,7 @@ def test_evaluate_all_combinations():
         [5, 2, 1, 3, 13],
         [9, 3, 5, 6, 1]
     ]
-    assert eval_list(board) == Points.FULL_HOUSE_1_13
+    assert eval_list(board) == FULL_HOUSE_1_13
 
     # 1 10 11 12 13
     board = [
@@ -151,4 +152,4 @@ def test_evaluate_all_combinations():
         [5, 2, 1, 3, 12],
         [9, 3, 5, 6, 11]
     ]
-    assert eval_list(board) == Points.FLUSH_1_10_11_12_13
+    assert eval_list(board) == FLUSH_1_10_11_12_13
