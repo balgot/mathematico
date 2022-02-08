@@ -51,8 +51,9 @@ class SimulationPlayer(Player):
         possible_moves = list(self.board.possible_moves())
 
         if not possible_moves:
+            score = self.board.score(remove_zeros=True) 
             self.board.unmake_move(position)
-            return self.board.score()
+            return score
 
         next_card_idx = random.randint(0, self.last_valid_card_idx)
         next_move = self.cards[next_card_idx]
@@ -64,6 +65,10 @@ class SimulationPlayer(Player):
         self.revalidate_card(next_card_idx)
         self.board.unmake_move(position)
         return score
+    
+    def get_score(self) -> int:
+        """Return score after the game is finished."""
+        return self.board.score(remove_zeros=True)
 
     def move(self, number: int):
         move_index = self.cards.index(number, 0, self.last_valid_card_idx)
@@ -83,7 +88,7 @@ class SimulationPlayer(Player):
             time_ns() - start_time < self.max_time
             and total_simulations <= self.max_simulations - 1000
         ):
-            for _ in range(1000):  # do not ask for time too many times
+            for _ in range(10):  # do not ask for time too many times
                 for i, move in enumerate(possible_moves):
                     score = self.simulate_move(move, number)
                     scores[i] += score

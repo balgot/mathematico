@@ -212,18 +212,18 @@ class Board:
         """Return size of the board."""
         return len(self.grid)
 
-    def score(self) -> int:
+    def score(self, remove_zeros: bool = False) -> int:
         """Calculate and return the score for the FULL board."""
         if self.occupied_cells != self.size ** 2:
             raise ValueError(f"Board is not full - {self}")
 
         total_score = 0
         for i in range(self.size):
-            total_score += evaluate_line(self.row_rle(i))
-            total_score += evaluate_line(self.col_rle(i))
+            total_score += evaluate_line(self.row_rle(i), remove_zeros)
+            total_score += evaluate_line(self.col_rle(i), remove_zeros)
 
         for use_main_diag in [True, False]:
-            diag_score = evaluate_line(self.diag_rle(use_main_diag))
+            diag_score = evaluate_line(self.diag_rle(use_main_diag), remove_zeros)
             if diag_score != 0:
                 total_score += DIAGONAL_BONUS + diag_score
 

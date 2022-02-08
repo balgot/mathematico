@@ -17,15 +17,21 @@ FLUSH = 50
 FLUSH_1_10_11_12_13 = 150
 
 
-def evaluate_line(line_rle: Dict[int, int]) -> int:
+def evaluate_line(line_rle: Dict[int, int], remove_zeros: bool = False) -> int:
     """
     Evaluates a single line of the grid. The rules are applied according
     to the number of different values in the line. Does not modify the
     original line.
 
     :param line_rle: rle of the line to evaluate
+    :param remove_zeros: if True, line_rle can contain also entries with 0 count,
+        so we need to remove them
     :return: score of the line as described in the rules
     """
+    if remove_zeros:
+        line_rle = {k:v for k,v in line_rle.items() if v != 0}
+    
+    
     if len(line_rle) == 5:
         # If each value is different, the only combination is be flush.
         if all(x in line_rle for x in [1, 10, 11, 12, 13]):

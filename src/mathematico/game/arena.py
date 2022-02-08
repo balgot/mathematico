@@ -26,13 +26,12 @@ class Arena:
         for _ in range(steps):
             game = Mathematico(seed=seed)
             for player in self.players:
+                player.reset()
                 game.add_player(player)
+                
             results = game.play(verbose=False)
-
             for idx, result in enumerate(results):
                 self.results[idx].append(result)
-            for player in self.players:
-                player.reset()
 
         if verbose:
             total_time = time.time() - start
