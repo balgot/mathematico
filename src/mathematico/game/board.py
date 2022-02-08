@@ -144,6 +144,10 @@ class Board:
             return self.main_diagonal_rle
         return self.anti_diagonal_rle
 
+    def at(self, row: int, col: int) -> int:
+        """Return symbol at (row, col) or EMPTY_CELL"""
+        return self.grid[row][col]
+
     def make_move(self, position: Tuple[int, int], move: int) -> None:
         """
         Play the move in the grid.
