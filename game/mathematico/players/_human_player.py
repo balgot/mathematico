@@ -14,7 +14,7 @@ class HumanPlayer(Player):
         print(self.board)
         print(f"Next card:\t{number}")
 
-        row, col = None, None
+        row, col = -1, -1
         moves = set(self.board.possible_moves())
         while (row, col) not in moves:
             row = int(input(f"Row number [0, {self.board.size}):\t"))

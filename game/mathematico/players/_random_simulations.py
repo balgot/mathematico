@@ -18,15 +18,15 @@ class SimulationPlayer(Player):
     of simulations.
     """
 
-    def __init__(self, max_time: Optional[int], max_simulations: Optional[int]):
+    def __init__(self, maxtime: Optional[int], max_simulations: Optional[int]):
         """Note: time in nanoseconds"""
-        assert max_time is not None or max_simulations is not None
+        assert maxtime is not None or max_simulations is not None
         super().__init__()
         self.cards: List[int] = []
         self.last_valid_card_idx = -1
         self.reset_cards()
-        self.max_time: int = max_time or 10e9  # 10 seconds
-        self.max_simulations: int = max_simulations or 10e50
+        self.max_time = maxtime or 10**9  # 10 seconds
+        self.max_simulations: int = max_simulations or 10**5
         self.verbose = False
 
     def reset_cards(self):

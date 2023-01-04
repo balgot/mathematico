@@ -1,10 +1,13 @@
 from collections import Counter
-from typing import Iterable, Dict, Any
+from typing import Iterable, Dict, TypeVar
 
 
-def rle(data: Iterable, ignore: Iterable[Any]) -> Dict[Any, int]:
+T = TypeVar("T")
+
+
+def rle(data: Iterable[T], ignore: Iterable[T]) -> Dict[T, int]:
     """
-    Performs run length encoding on the data. Does not modify the original data.
+    Performs run length encoding on data. Does not modify the original data.
     Expected time complexity: O(n).
 
     :param data: list of elements (in any order)

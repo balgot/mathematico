@@ -1,0 +1,47 @@
+# general information about the project
+[project]
+name = "mathematico"
+version = "1.0.0"
+description = "A single-player poker-like sudoku-style game."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+keywords = ["mathematico", "logic-game", "game"]
+authors = [
+    { name = "Michal Barnišin", email = "michal.barnisin14+mathematico@gmail.com" }
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+dependencies = []
+
+
+# optional dependencies, not installed by deafult
+[project.optional-dependencies]
+lint = [
+    "mypy>=0.991",
+    "pycodestyle>=2.10",
+    "flake8>=6.0"
+]
+test = [
+    "pytest>=6.0"
+]
+
+
+# links displayed on the pypi page
+[project.urls]
+repository = "https://github.com/balgot/mathematico"
+
+
+# TODO: gui scripts
+# [project.gui-scripts]
+# name = "spam:main_gui"
+
+
+# settings for building the package
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
