@@ -1,5 +1,4 @@
 import pytest
-import numpy as np
 
 from mathematico.game import Board
 from mathematico.game.board import EMPTY_CELL
@@ -52,8 +51,8 @@ def test_row():
     board.integrity_check()
     board.make_move((0, 4), 13)
     board.integrity_check()
-    expected_row = np.asarray([EMPTY_CELL, 1, 3, EMPTY_CELL, 13])
-    assert all(board.row(0) == expected_row)
+    expected_row = [EMPTY_CELL, 1, 3, EMPTY_CELL, 13]
+    assert board.row(0) == expected_row
 
 
 def test_row_rle():
@@ -72,15 +71,15 @@ def test_col():
     board = Board()
     assert len(board.col(0)) == board.size
     for i in range(board.size):
-        assert all(board.col(i) == np.full((board.size,), EMPTY_CELL))
+        assert board.col(i) == [EMPTY_CELL]*board.size
     board.make_move((0, 1), 1)
     board.integrity_check()
     board.make_move((1, 1), 3)
     board.integrity_check()
     board.make_move((4, 1), 13)
     board.integrity_check()
-    expected_col = np.asarray([1, 3, EMPTY_CELL, EMPTY_CELL, 13])
-    assert all(board.col(1) == expected_col)
+    expected_col = [1, 3, EMPTY_CELL, EMPTY_CELL, 13]
+    assert board.col(1) == expected_col
 
 
 def test_col_rle():
@@ -88,7 +87,34 @@ def test_col_rle():
 
 
 def test_diag():
-    pass
+    """Test whether correct data are returned on the diagonal."""
+    board = Board()
+    EMPTY_DIAG = [EMPTY_CELL] * board.size
+    assert board.diag(True) == EMPTY_DIAG
+    assert board.diag(False) == EMPTY_DIAG
+
+    board.make_move((1, 0), 5)  # outside both diagonals
+    assert board.diag(True) == EMPTY_DIAG
+    assert board.diag(False) == EMPTY_DIAG
+
+    board.make_move((1, 1), 6)  # only the main
+    MAIN = EMPTY_DIAG.copy()
+    MAIN[1] = 6
+    assert board.diag(True) == MAIN
+    assert board.diag(False) == EMPTY_DIAG
+
+    board.make_move((board.size-1, 0), 3)  # only the anti
+    ANTI = EMPTY_DIAG.copy()
+    ANTI[-1] = 3
+    assert board.diag(True) == MAIN
+    assert board.diag(False) == ANTI
+
+    board.make_move((2, 2), 1)  # both
+    assert board.size == 5
+    ANTI[2] = 1
+    MAIN[2] = 1
+    assert board.diag(True) == MAIN
+    assert board.diag(False) == ANTI
 
 
 def test_make_move():
@@ -96,7 +122,7 @@ def test_make_move():
     board = Board()
     board.make_move((0, 0), 13)
     assert len(list(board.possible_moves())) == 5 * 5 - 1
-    assert all(board.row(0) == board.col(0))
+    assert board.row(0) == board.col(0)
     assert (0, 0) not in board.possible_moves()
     assert board.occupied_cells == 1
 

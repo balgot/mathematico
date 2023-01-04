@@ -2,8 +2,7 @@
 This file defines the grid of the game Mathematico alongside with the move
 generation and formatting of the text output of the grid.
 """
-from typing import Tuple, Iterator, Dict
-import numpy as np
+from typing import List, Tuple, Iterator, Dict
 from collections import defaultdict
 
 from ._utils import rle
@@ -11,44 +10,47 @@ from .eval import evaluate_line, DIAGONAL_BONUS
 
 
 EMPTY_CELL = 0
+Rle = Dict[int, int]
 
 
 class Board:
     """
-    The Board of the game is 5x5 grid with integer values representing the moves
-    of players. We encode the moves as tuples (x, y) denoting the real position
-    inside our array.
+    The Board of the game is 5x5 grid with integer values representing the
+    moves of the players. We encode the moves as tuples (x, y) denoting the
+    real position inside our array.
 
     Attributes
-        - grid: 2D array, empty values are stored as Board.EMPTY_CELL
-        - occupied_cells: number of occupied cells
-        - size: size of the board
+    ----------
+        grid: 2D array, empty values are stored as Board.EMPTY_CELL
+        occupied_cells: number of occupied cells
+        size: size of the board
 
     Methods
-        - integrity_check: returns True if the integrity holds
-        - row(n): n-th row as a list
-        - col(n): n-th column as a list
-        - diag: main/anti diagonal as a list
-        - row_rle(n): rle encoding of the n-th row
-        - col_rle(n): rle encoding of the n-th column
-        - diag_rle: rle encoding of the diagonal
-        - **make_move**: updates a grid with the move
-        - **unmake_move**: undos the specified move
-        - **possible_moves**: iterates over all possible moves
-        - **score**: score of the filled up board
+    -------
+        integrity_check: returns True if the integrity holds
+        row: n-th row as a list
+        col: n-th column as a list
+        diag: main/anti diagonal as a list
+        row_rle: rle encoding of the n-th row
+        col_rle: rle encoding of the n-th column
+        diag_rle: rle encoding of the diagonal
+        make_move: updates a grid with the move
+        unmake_move: undos the specified move
+        possible_moves: iterates over all possible moves
+        score: score of the filled up board
     """
 
     def __init__(self, size: int = 5):
-        self.grid: np.ndarray = np.full((size, size), EMPTY_CELL)
-        self.rows_rle = [defaultdict(int) for _ in range(size)]
-        self.cols_rle = [defaultdict(int) for _ in range(size)]
-        self.main_diagonal_rle = defaultdict(int)
-        self.anti_diagonal_rle = defaultdict(int)
+        self.grid = [[EMPTY_CELL]*size for _ in range(size)]
+        self.rows_rle: List[Rle] = [defaultdict(int) for _ in range(size)]
+        self.cols_rle: List[Rle] = [defaultdict(int) for _ in range(size)]
+        self.main_diagonal_rle: Rle = defaultdict(int)
+        self.anti_diagonal_rle: Rle = defaultdict(int)
         self.occupied_cells: int = 0
 
     @staticmethod
-    def cell_to_str(cell: int) -> str:
-        """Return string representation of a cell"""
+    def _cell_to_str(cell: int) -> str:
+        """Return string representation of a cell."""
         if cell == EMPTY_CELL:
             return "  "
         return f"{cell:2d}"
@@ -69,12 +71,14 @@ class Board:
                        | 1| 9| 2| 6| 3|
                        +--+--+--+--+--+
 
-        :return: string representation of the grid
+        Returns
+        -------
+            string representation of the grid
         """
         long_line = "+--" * len(self.grid) + "+"
         result = [long_line]
         for row in self.grid:
-            line = "|" + "|".join(map(self.cell_to_str, row)) + "|"
+            line = "|" + "|".join(map(self._cell_to_str, row)) + "|"
             result.append(line)
             result.append(long_line)
         return "\n".join(result)
@@ -92,7 +96,7 @@ class Board:
 
         :raises RuntimeError: if data mismatch
         """
-        non_empty = sum([x != EMPTY_CELL for x in self.grid.flatten()])
+        non_empty = sum([x != EMPTY_CELL for row in self.grid for x in row])
         if non_empty != self.occupied_cells:
             raise RuntimeError("Occupied cells mismatch")
 
@@ -107,7 +111,7 @@ class Board:
         if self.anti_diagonal_rle != rle(self.diag(False), [EMPTY_CELL]):
             raise RuntimeError("Rle of anti diagonal mismatch")
 
-    def row(self, n: int) -> np.ndarray:
+    def row(self, n: int) -> List[int]:
         """Return n-th row."""
         return self.grid[n]
 
@@ -115,15 +119,15 @@ class Board:
         """Return RLE of n-th row."""
         return self.rows_rle[n]
 
-    def col(self, n: int) -> np.ndarray:
+    def col(self, n: int) -> List[int]:
         """Return n-th column."""
-        return self.grid.T[n]
+        return [row[n] for row in self.grid]
 
     def col_rle(self, n: int) -> Dict[int, int]:
         """Return RLE of n-th column."""
         return self.cols_rle[n]
 
-    def diag(self, main_diagonal: bool = True) -> np.ndarray:
+    def diag(self, main_diagonal: bool = True) -> List[int]:
         """
         Returns main diagonal or main anti diagonal of the grid.
 
@@ -131,8 +135,12 @@ class Board:
         :return: array with elements on the corresponding diagonal
         """
         if main_diagonal:
-            return self.grid.diagonal()
-        return np.flipud(self.grid).diagonal()
+            col = 0
+            dx = 1
+        else:
+            col = self.size - 1
+            dx = -1
+        return [self.grid[i][col + dx*i] for i in range(self.size)]
 
     def diag_rle(self, main_diagonal: bool = True) -> Dict[int, int]:
         """Return RLE of a diagonal.
@@ -157,7 +165,7 @@ class Board:
         if not self.is_empty(row, col):
             raise ValueError(f"The position {position} is invalid")
 
-        self.grid[position] = move
+        self.grid[row][col] = move
         self.occupied_cells += 1
 
         self.rows_rle[row][move] += 1
@@ -177,8 +185,8 @@ class Board:
         if self.is_empty(row, col):
             raise ValueError(f"Undoing empty square {position}")
 
-        cell = self.grid[position]
-        self.grid[position] = EMPTY_CELL
+        cell = self.grid[row][col]
+        self.grid[row][col] = EMPTY_CELL
         self.occupied_cells -= 1
 
         self.rows_rle[row][cell] -= 1

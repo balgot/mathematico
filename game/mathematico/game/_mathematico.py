@@ -27,7 +27,7 @@ class Mathematico:
     """
     def __init__(self, seed=None):
         self.moves_played = 0
-        self.players = []
+        self.players: List[Player] = []
         self._available_cards = [i for i in range(1, 14) for _ in range(4)]
         self._random = Random(seed)
         self._random.shuffle(self._available_cards)
@@ -58,7 +58,7 @@ class Mathematico:
         """
         if self.finished():
             return None
-        # the cards are shuffled at the beginning, it is enough to take the next
+        # the cards are shuffled at the beginning
         card = self._available_cards[self.moves_played]
         self.moves_played += 1
         return card
@@ -92,8 +92,8 @@ class Mathematico:
         their move and at the end computes final scores.
 
         :param verbose: if True, prints information about game
-        :return: list of final scores, the index corresponds to the index return
-            by <add_player>
+        :return: list of final scores, the index corresponds to the index
+            returned by `add_player`
         """
         while not self.finished():
             next_card = self.next_card()
