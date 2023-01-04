@@ -22,9 +22,9 @@ dependencies = []
 # optional dependencies, not installed by deafult
 [project.optional-dependencies]
 lint = [
-    "mypy>=0.910",
-    "pycodestyle",
-    "flake8>=3.9"
+    "mypy>=0.991",
+    "pycodestyle>=2.10",
+    "flake8>=6.0"
 ]
 test = [
     "pytest>=6.0"
@@ -45,19 +45,3 @@ repository = "https://github.com/balgot/mathematico"
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
-
-
-# settings for mypy
-[tool.mypy]
-mypy_path = "."
-check_untyped_defs = true
-disallow_any_generics = true
-ignore_missing_imports = true
-no_implicit_optional = true
-show_error_codes = true
-strict_equality = true
-warn_redundant_casts = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-no_implicit_reexport = true

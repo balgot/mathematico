@@ -22,6 +22,6 @@ jobs:
       - name: flake8
         run: flake8 game/
       - name: mypy
-        run: mypy game/ --check-untyped-defs
+        run: cd game && mypy . --check-untyped-defs
       - name: codestyle
         run: pycodestyle game
