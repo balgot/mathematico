@@ -59,6 +59,25 @@ print(player1.board)
 +--+--+--+--+--+
 ```
 
+### Arena
+
+The class `Mathematico` plays only one game, to simulate multiple rounds,
+use the `Arena`:
+
+```python
+from mathematico import Arena
+
+arena = Arena()
+arena.add_player(player1, verbose=False)
+arena.run(rounds=3)
+```
+
+which returns the results in each round, e.g.:
+
+```
+[[80, 60, 160]]
+```
+
 
 
 ### Players
