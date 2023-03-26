@@ -1,7 +1,7 @@
 # general information about the project
 [project]
 name = "mathematico"
-version = "1.0.0"
+version = "1.0.1"
 description = "A single-player poker-like sudoku-style game."
 readme = "README.md"
 requires-python = ">=3.8"
