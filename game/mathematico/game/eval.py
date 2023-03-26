@@ -25,7 +25,15 @@ def evaluate_line(line_rle: Dict[int, int]) -> int:
 
     :param line_rle: rle of the line to evaluate
     :return: score of the line as described in the rules
+
+    Note: removes 0 values from the dictionary.
     """
+    items = line_rle.items()
+    for k, v in items:
+        if not v or not k:
+            line_rle.pop(k)
+
+
     if len(line_rle) == 5:
         # If each value is different, the only combination is be flush.
         if all(x in line_rle for x in [1, 10, 11, 12, 13]):
