@@ -67,7 +67,7 @@ def evaluate_line(line_rle: Dict[int, int]) -> int:
     # Note that we can't have more different values than five (length
     # of the line) and less than two (max four numbers of a kind),
     elif len(line_rle) < 2:
-        # ... getting here means we are evaluating not-filled board, which is ok
+        # ... getting here means we are evaluating not-full board, which is ok
         return 0
 
     else:

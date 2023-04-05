@@ -1,5 +1,4 @@
 from typing import List
-import pytest
 
 from mathematico.game import Board
 from mathematico.game.eval import FLUSH, FULL_HOUSE, FLUSH_1_10_11_12_13, \
