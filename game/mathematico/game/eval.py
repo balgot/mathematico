@@ -64,8 +64,12 @@ def evaluate_line(line_rle: Dict[int, int]) -> int:
             return FULL_HOUSE_1_13
         return FULL_HOUSE
 
+    # Note that we can't have more different values than five (length
+    # of the line) and less than two (max four numbers of a kind),
+    elif len(line_rle) < 2:
+        # ... getting here means we are evaluating not-filled board, which is ok
+        return 0
+
     else:
-        # Note that we can't have more different values than five (length
-        # of the line) and less than two (max four numbers of a kind), thus
-        # if we get here, there is a mistake
+        # ... and if we get here, there is a mistake
         raise ValueError(f"Unknown combination of values: {line_rle}")

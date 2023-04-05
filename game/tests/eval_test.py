@@ -21,11 +21,10 @@ def eval_list(array: List[List[int]]) -> int:
     return board.score()
 
 
-def test_raises():
-    """Empty board cannot be scored."""
+def test_empty_board():
+    """Empty board can be scored, and as there is no combination, returns 0."""
     board = Board()
-    with pytest.raises(ValueError):
-        board.score()
+    assert board.score() == 0
 
 
 def test_evaluate_simple():
