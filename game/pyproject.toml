@@ -36,11 +36,6 @@ test = [
 repository = "https://github.com/balgot/mathematico"
 
 
-# TODO: gui scripts
-# [project.gui-scripts]
-# name = "spam:main_gui"
-
-
 # settings for building the package
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
