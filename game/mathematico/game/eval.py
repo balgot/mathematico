@@ -9,12 +9,65 @@ DIAGONAL_BONUS = 10
 PAIR = 10
 TWO_PAIRS = 20
 THREE_OF_A_KIND = 40
-FOUR_OF_A_KIND = 160
-FOUR_ONES = 200
+FLUSH = 50
 FULL_HOUSE = 80
 FULL_HOUSE_1_13 = 100
-FLUSH = 50
+FOUR_OF_A_KIND = 160
 FLUSH_1_10_11_12_13 = 150
+FOUR_ONES = 200
+
+
+# Note: each method assumes the previous ones do not hold
+
+
+def _has_four_ones(line_rle: Dict[int, int]) -> bool:
+    return line_rle.get(1, 0) == 4
+
+
+def _has_flush_1_10_11_12_13(line_rle: Dict[int, int]) -> bool:
+    VALS = [1, 10, 11, 12, 13]
+    return len(line_rle) == 5 and all(line_rle.get(x, 0) == 1 for x in VALS)
+
+
+def _has_four_of_kind(line_rle: Dict[int, int]) -> bool:
+    return 4 in line_rle.values()
+
+
+def _has_full_house_1_13(line_rle: Dict[int, int]) -> bool:
+    return line_rle.get(1, 0) == 3 and line_rle.get(13, 0) == 2
+
+
+def _has_full_house(line_rle: Dict[int, int]) -> bool:
+    return sum(line_rle.values()) == 5 and len(line_rle) == 2
+
+
+def _has_flush(line_rle: Dict[int, int]) -> bool:
+    return len(line_rle) == 5 and max(line_rle) - min(line_rle) == 4
+
+
+def _has_three_of_kind(line_rle: Dict[int, int]) -> bool:
+    return 3 in line_rle.values()
+
+
+def _has_two_pairs(line_rle: Dict[int, int]) -> bool:
+    return sum(v == 2 for v in line_rle.values()) == 2
+
+
+def _has_pair(line_rle: Dict[int, int]) -> bool:
+    return 2 in line_rle.values()
+
+
+EVALS = [
+    (FOUR_ONES, _has_four_ones),
+    (FLUSH_1_10_11_12_13, _has_flush_1_10_11_12_13),
+    (FOUR_OF_A_KIND, _has_four_of_kind),
+    (FULL_HOUSE_1_13, _has_full_house_1_13),
+    (FULL_HOUSE, _has_full_house),
+    (FLUSH, _has_flush),
+    (THREE_OF_A_KIND, _has_three_of_kind),
+    (TWO_PAIRS, _has_two_pairs),
+    (PAIR, _has_pair)
+]
 
 
 def evaluate_line(line_rle: Dict[int, int]) -> int:
@@ -33,43 +86,7 @@ def evaluate_line(line_rle: Dict[int, int]) -> int:
         if not v or not k:
             line_rle.pop(k)
 
-    if len(line_rle) == 5:
-        # If each value is different, the only combination is be flush.
-        if all(x in line_rle for x in [1, 10, 11, 12, 13]):
-            return FLUSH_1_10_11_12_13
-        if max(line_rle.keys()) - min(line_rle.keys()) == 5 - 1:
-            return FLUSH
-        return 0
-
-    elif len(line_rle) == 4:
-        # The only combination with four different values is a single pair,
-        # and so we do not need to check any other
-        return PAIR
-
-    elif len(line_rle) == 3:
-        # To have three different values, either two and two values are
-        # same, or three are same
-        if any(x == 3 for x in line_rle.values()):
-            return THREE_OF_A_KIND
-        return TWO_PAIRS
-
-    elif len(line_rle) == 2:
-        # The only possibility here is FULL_HOUSE or four of a kind, both of
-        # must be checked, and special case (four 1s) must be handled, same
-        # for <1, 1, 1, 13, 13> combination
-        for key, value in line_rle.items():
-            if value == 4:
-                return FOUR_ONES if key == 1 else FOUR_OF_A_KIND
-        if 1 in line_rle and 13 in line_rle and line_rle[1] == 3:
-            return FULL_HOUSE_1_13
-        return FULL_HOUSE
-
-    # Note that we can't have more different values than five (length
-    # of the line) and less than two (max four numbers of a kind),
-    elif len(line_rle) < 2:
-        # ... getting here means we are evaluating not-full board, which is ok
-        return 0
-
-    else:
-        # ... and if we get here, there is a mistake
-        raise ValueError(f"Unknown combination of values: {line_rle}")
+    for points, scorer in EVALS:
+        if scorer(line_rle):
+            return points
+    return 0
