@@ -51,9 +51,9 @@ class Arena:
         """
         start = time.time()
 
-        for _ in range(rounds):
+        for i in range(rounds):
             # initialize a new game
-            game = Mathematico(seed=seed)
+            game = Mathematico(seed=seed+i)
             for player in self.players:
                 player.reset()
                 game.add_player(player)
